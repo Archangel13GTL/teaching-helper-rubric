@@ -107,7 +107,9 @@ const translations = {
     teacher: "Teacher View",
     summary: "Grading Summary",
     total: "Total Score:",
-    notes: "Scoring Notes & Rationale"
+    notes: "Scoring Notes & Rationale",
+    exportCsv: "Export CSV",
+    printPdf: "Print/PDF"
   },
   ceb: {
     nav: { esl: "ESL Rubriks", general: "General Rubriks" },
@@ -115,9 +117,13 @@ const translations = {
     teacher: "Tan‑aw sa Magtutudlo",
     summary: "Summaryo sa Paggrado",
     total: "Kinatibuk-ang Iskor:",
-    notes: "Mga Notas ug Rasón sa Paggrado"
+    notes: "Mga Notas ug Rasón sa Paggrado",
+    exportCsv: "I-export ang CSV",
+    printPdf: "Iprint/PDF"
   }
 };
+
+const levelNames = ['Beginning', 'Developing', 'Proficient', 'Excellent'];
 
 // Application state
 const state = {
@@ -139,6 +145,8 @@ const dom = {
   rubricTableWrapper: document.getElementById('rubric-table-wrapper'),
   teacherTools: document.getElementById('teacher-tools'),
   totalScore: document.getElementById('total-score'),
+  exportBtn: document.getElementById('export-csv'),
+  printBtn: document.getElementById('print-pdf'),
   // labels to translate
   studentLabel: document.getElementById('student-view-label'),
   teacherLabel: document.getElementById('teacher-view-label'),
@@ -165,6 +173,8 @@ function applyTranslations() {
   dom.summaryLabel.textContent = t.summary;
   dom.totalLabel.textContent = t.total;
   dom.notesLabel.textContent = t.notes;
+  dom.exportBtn.textContent = t.exportCsv;
+  dom.printBtn.textContent = t.printPdf;
   // Update document lang attribute
   document.documentElement.lang = state.lang;
 }
@@ -182,6 +192,31 @@ function updateTotalScore() {
   const total = Object.values(state.scores).reduce((sum, v) => sum + v, 0);
   dom.totalScore.textContent = total;
   updateChart();
+}
+
+function exportToCSV() {
+  const rubric = rubricData[state.currentRubric];
+  const rows = [['Criterion', 'Level', 'Points']];
+  rubric.criteria.forEach(c => {
+    let selectedIdx = 0;
+    for (let i = 0; i < levelNames.length; i++) {
+      if (state.scores[c.name] === calculateScore(c.name, i)) {
+        selectedIdx = i;
+        break;
+      }
+    }
+    rows.push([c.name, levelNames[selectedIdx], state.scores[c.name]]);
+  });
+  const csvContent = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${state.currentRubric}-scores.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 let scoreChart = null;
@@ -337,6 +372,9 @@ function init() {
     state.lang = e.target.value;
     applyTranslations();
   });
+  // Export and print buttons
+  dom.exportBtn.addEventListener('click', exportToCSV);
+  dom.printBtn.addEventListener('click', () => window.print());
   // Initial setup
   resetScores();
   renderRubric();

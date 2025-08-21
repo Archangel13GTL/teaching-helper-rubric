@@ -26,6 +26,10 @@
     .toggle-bg:after { content:''; position:absolute; top:2px; left:2px; background:white; width:20px; height:20px; border-radius:9999px; transition: transform .3s; }
     input:checked + .toggle-bg:after { transform: translateX(100%); }
     input:checked + .toggle-bg { background:var(--accent); }
+    @media print {
+      .no-print { display: none !important; }
+      body { background:white; }
+    }
   </style>
 </head>
 <body class="antialiased">
@@ -33,7 +37,7 @@
     <header>
       <div class="flex justify-between items-center mb-6">
         <h1 class="text-4xl font-bold text-[var(--accent)]">Teaching Helper Rubric</h1>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 no-print">
           <label for="lang-select" class="text-sm">Language</label>
           <select id="lang-select" class="border rounded p-2">
             <option value="en">English</option>
@@ -47,12 +51,12 @@
         <img src="assets/flourish.png" alt="" class="h-6">
       </div>
     </header>
-    <nav class="flex justify-center mb-6 border-b-2 border-[var(--muted)] pb-2" role="tablist">
+    <nav class="flex justify-center mb-6 border-b-2 border-[var(--muted)] pb-2 no-print" role="tablist">
       <button id="nav-esl" class="tab-active text-lg font-semibold py-3 px-8 rounded-t-lg" role="tab" aria-selected="true" data-rubric="esl">ESL Rubric</button>
       <button id="nav-general" class="tab-inactive text-lg font-semibold py-3 px-8 rounded-t-lg" role="tab" aria-selected="false" data-rubric="general">General Rubric</button>
     </nav>
     <main>
-      <div class="flex justify-center items-center mb-6 gap-4">
+      <div class="flex justify-center items-center mb-6 gap-4 no-print">
         <span id="student-view-label" class="font-semibold">Student View</span>
         <label for="view-toggle" class="flex items-center cursor-pointer">
           <input type="checkbox" id="view-toggle" class="sr-only">
@@ -67,6 +71,10 @@
       </section>
       <section id="teacher-tools" class="hidden mt-8">
         <h3 id="grading-summary-label" class="text-2xl font-bold text-[var(--accent)] mb-4 text-center">Grading Summary</h3>
+        <div class="flex justify-end gap-2 mb-4">
+          <button id="export-csv" class="bg-[var(--accent)] text-white px-4 py-2 rounded no-print">Export CSV</button>
+          <button id="print-pdf" class="bg-[var(--accent)] text-white px-4 py-2 rounded no-print">Print/PDF</button>
+        </div>
         <div class="grid md:grid-cols-2 gap-8">
           <div id="scoring-summary" class="bg-white rounded-lg shadow p-6">
             <div class="flex justify-between items-baseline mb-4">
