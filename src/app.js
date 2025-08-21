@@ -256,35 +256,71 @@ function renderRubric() {
   dom.rubricSubtitle.textContent = data.subtitle;
   dom.notes.content.innerHTML = data.notes;
   const isTeacher = state.isTeacherView;
-  let html = '<table class="w-full border-collapse">';
+  const fragment = document.createDocumentFragment();
+  const table = document.createElement('table');
+  table.className = 'w-full border-collapse';
+
   // Header
-  html += '<thead><tr class="table-header text-left">';
-  html += '<th class="p-3 font-semibold text-sm w-1/5">Criteria</th>';
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  headerRow.className = 'table-header text-left';
+  const critHeader = document.createElement('th');
+  critHeader.className = 'p-3 font-semibold text-sm w-1/5';
+  critHeader.textContent = 'Criteria';
+  headerRow.appendChild(critHeader);
   const levels = ['Beginning','Developing','Proficient','Excellent'];
   levels.forEach((lvl, idx) => {
-    html += `<th class="p-3 font-semibold text-sm ${isTeacher ? 'text-center' : ''}">${idx+1} - ${lvl}</th>`;
+    const th = document.createElement('th');
+    th.className = `p-3 font-semibold text-sm ${isTeacher ? 'text-center' : ''}`;
+    th.textContent = `${idx+1} - ${lvl}`;
+    headerRow.appendChild(th);
   });
-  html += '</tr></thead><tbody>';
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  // Body
+  const tbody = document.createElement('tbody');
+  const rowsFragment = document.createDocumentFragment();
   data.criteria.forEach(criterion => {
-    html += '<tr class="border-b border-[var(--border)]">';
-    html += `<th scope="row" class="p-3 font-semibold criterion-cell">${criterion.name}${isTeacher ? ` (${criterion.weight} pts)` : ''}</th>`;
+    const tr = document.createElement('tr');
+    tr.className = 'border-b border-[var(--border)]';
+
+    const th = document.createElement('th');
+    th.scope = 'row';
+    th.className = 'p-3 font-semibold criterion-cell';
+    th.textContent = criterion.name + (isTeacher ? ` (${criterion.weight} pts)` : '');
+    tr.appendChild(th);
+
     criterion.levels.forEach((desc, i) => {
+      const td = document.createElement('td');
+      td.className = 'p-3 text-sm';
       if (isTeacher) {
+        td.classList.add('score-cell');
         const selected = state.scores[criterion.name] === calculateScore(criterion.name, i);
-        html += `<td class="p-3 text-sm score-cell ${selected ? 'selected' : ''}" tabindex="0" data-criterion="${criterion.name}" data-level="${i}" aria-pressed="${selected}">${desc}</td>`;
-      } else {
-        html += `<td class="p-3 text-sm">${desc}</td>`;
+        if (selected) td.classList.add('selected');
+        td.tabIndex = 0;
+        td.dataset.criterion = criterion.name;
+        td.dataset.level = i;
+        td.setAttribute('aria-pressed', selected);
       }
+      td.textContent = desc;
+      tr.appendChild(td);
     });
-    html += '</tr>';
+
+    rowsFragment.appendChild(tr);
   });
-  html += '</tbody></table>';
-  dom.rubricTableWrapper.innerHTML = html;
+  tbody.appendChild(rowsFragment);
+  table.appendChild(tbody);
+
+  fragment.appendChild(table);
+  dom.rubricTableWrapper.innerHTML = '';
+  dom.rubricTableWrapper.appendChild(fragment);
+
   // Show or hide teacher tools
   if (isTeacher) {
     dom.teacherTools.classList.remove('hidden');
-    // Add event listeners to cells for scoring
-    document.querySelectorAll('.score-cell').forEach(cell => {
+    // Add event listeners to cells for scoring after DOM insertion
+    dom.rubricTableWrapper.querySelectorAll('.score-cell').forEach(cell => {
       cell.addEventListener('click', onScoreCell);
       cell.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
