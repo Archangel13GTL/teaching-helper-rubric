@@ -26,6 +26,16 @@
     .toggle-bg:after { content:''; position:absolute; top:2px; left:2px; background:white; width:20px; height:20px; border-radius:9999px; transition: transform .3s; }
     input:checked + .toggle-bg:after { transform: translateX(100%); }
     input:checked + .toggle-bg { background:var(--accent); }
+    @media print {
+      nav,
+      #view-toggle,
+      #student-view-label,
+      #teacher-view-label,
+      #notes-toggle,
+      #lang-select,
+      #export-pdf { display: none; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
   </style>
 </head>
 <body class="antialiased">
@@ -39,6 +49,7 @@
             <option value="en">English</option>
             <option value="ceb">Bisayâ (Cebuano)</option>
           </select>
+          <button id="export-pdf" class="border rounded p-2">Export PDF</button>
         </div>
       </div>
       <div class="flex items-center gap-3 mb-4">

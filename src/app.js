@@ -107,7 +107,8 @@ const translations = {
     teacher: "Teacher View",
     summary: "Grading Summary",
     total: "Total Score:",
-    notes: "Scoring Notes & Rationale"
+    notes: "Scoring Notes & Rationale",
+    exportPdf: "Export PDF"
   },
   ceb: {
     nav: { esl: "ESL Rubriks", general: "General Rubriks" },
@@ -115,7 +116,8 @@ const translations = {
     teacher: "Tan‑aw sa Magtutudlo",
     summary: "Summaryo sa Paggrado",
     total: "Kinatibuk-ang Iskor:",
-    notes: "Mga Notas ug Rasón sa Paggrado"
+    notes: "Mga Notas ug Rasón sa Paggrado",
+    exportPdf: "I-export ang PDF"
   }
 };
 
@@ -146,6 +148,7 @@ const dom = {
   totalLabel: document.getElementById('total-score-label'),
   notesLabel: document.getElementById('notes-toggle-label'),
   langSelect: document.getElementById('lang-select'),
+  exportPdfBtn: document.getElementById('export-pdf'),
   notes: {
     toggle: document.getElementById('notes-toggle'),
     content: document.getElementById('notes-content'),
@@ -165,6 +168,7 @@ function applyTranslations() {
   dom.summaryLabel.textContent = t.summary;
   dom.totalLabel.textContent = t.total;
   dom.notesLabel.textContent = t.notes;
+  dom.exportPdfBtn.textContent = t.exportPdf;
   // Update document lang attribute
   document.documentElement.lang = state.lang;
 }
@@ -336,6 +340,10 @@ function init() {
   dom.langSelect.addEventListener('change', (e) => {
     state.lang = e.target.value;
     applyTranslations();
+  });
+  // Export PDF
+  dom.exportPdfBtn.addEventListener('click', () => {
+    window.print();
   });
   // Initial setup
   resetScores();
