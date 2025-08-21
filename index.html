@@ -35,10 +35,11 @@
         <h1 class="text-4xl font-bold text-[var(--accent)]">Teaching Helper Rubric</h1>
         <div class="flex items-center gap-2">
           <label for="lang-select" class="text-sm">Language</label>
-          <select id="lang-select" class="border rounded p-2">
+          <select id="lang-select" class="border rounded p-2 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2">
             <option value="en">English</option>
             <option value="ceb">Bisayâ (Cebuano)</option>
           </select>
+          <button id="text-toggle" class="border rounded p-2 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2" aria-pressed="false">Bigger text</button>
         </div>
       </div>
       <div class="flex items-center gap-3 mb-4">
@@ -48,14 +49,14 @@
       </div>
     </header>
     <nav class="flex justify-center mb-6 border-b-2 border-[var(--muted)] pb-2" role="tablist">
-      <button id="nav-esl" class="tab-active text-lg font-semibold py-3 px-8 rounded-t-lg" role="tab" aria-selected="true" data-rubric="esl">ESL Rubric</button>
-      <button id="nav-general" class="tab-inactive text-lg font-semibold py-3 px-8 rounded-t-lg" role="tab" aria-selected="false" data-rubric="general">General Rubric</button>
+      <button id="nav-esl" class="tab-active text-lg font-semibold py-3 px-8 rounded-t-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2" role="tab" aria-selected="true" data-rubric="esl">ESL Rubric</button>
+      <button id="nav-general" class="tab-inactive text-lg font-semibold py-3 px-8 rounded-t-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2" role="tab" aria-selected="false" data-rubric="general">General Rubric</button>
     </nav>
     <main>
       <div class="flex justify-center items-center mb-6 gap-4">
         <span id="student-view-label" class="font-semibold">Student View</span>
-        <label for="view-toggle" class="flex items-center cursor-pointer">
-          <input type="checkbox" id="view-toggle" class="sr-only">
+        <label for="view-toggle" class="flex items-center cursor-pointer focus-within:ring-2 focus-within:ring-[var(--accent)] focus-within:ring-offset-2 rounded">
+          <input type="checkbox" id="view-toggle" class="sr-only focus:outline-none">
           <div class="relative w-12 h-6 rounded-full bg-gray-300 toggle-bg"></div>
         </label>
         <span id="teacher-view-label" class="font-semibold">Teacher View</span>
@@ -89,7 +90,7 @@
       </section>
       <section id="notes-container" class="mt-8">
         <div class="bg-white rounded-lg shadow">
-          <button id="notes-toggle" class="w-full p-4 flex justify-between items-center font-semibold text-lg text-[var(--accent)]">
+          <button id="notes-toggle" class="w-full p-4 flex justify-between items-center font-semibold text-lg text-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2">
             <span id="notes-toggle-label">Scoring Notes &amp; Rationale</span>
             <span id="notes-icon">&#9662;</span>
           </button>
@@ -102,5 +103,26 @@
     </main>
   </div>
   <script src="src/app.js"></script>
+  <script>
+    const TEXT_KEY = 'prefersBigText';
+    const bodyEl = document.body;
+    const textToggle = document.getElementById('text-toggle');
+
+    function applyTextPreference() {
+      const big = localStorage.getItem(TEXT_KEY) === 'true';
+      bodyEl.classList.toggle('text-lg', big);
+      textToggle.setAttribute('aria-pressed', big);
+      textToggle.textContent = big ? 'Normal text' : 'Bigger text';
+    }
+
+    textToggle.addEventListener('click', () => {
+      const big = bodyEl.classList.toggle('text-lg');
+      localStorage.setItem(TEXT_KEY, big);
+      textToggle.setAttribute('aria-pressed', big);
+      textToggle.textContent = big ? 'Normal text' : 'Bigger text';
+    });
+
+    applyTextPreference();
+  </script>
 </body>
 </html>
