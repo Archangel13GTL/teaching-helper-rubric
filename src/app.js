@@ -128,22 +128,24 @@ const state = {
 };
 
 // Cache DOM elements
-const dom = {
-  nav: {
-    esl: document.getElementById('nav-esl'),
-    general: document.getElementById('nav-general')
-  },
-  viewToggle: document.getElementById('view-toggle'),
-  rubricTitle: document.getElementById('rubric-title'),
-  rubricSubtitle: document.getElementById('rubric-subtitle'),
-  rubricTableWrapper: document.getElementById('rubric-table-wrapper'),
-  teacherTools: document.getElementById('teacher-tools'),
-  totalScore: document.getElementById('total-score'),
-  // labels to translate
-  studentLabel: document.getElementById('student-view-label'),
-  teacherLabel: document.getElementById('teacher-view-label'),
-  summaryLabel: document.getElementById('grading-summary-label'),
-  totalLabel: document.getElementById('total-score-label'),
+  const dom = {
+    nav: {
+      esl: document.getElementById('nav-esl'),
+      general: document.getElementById('nav-general')
+    },
+    viewToggle: document.getElementById('view-toggle'),
+    rubricTitle: document.getElementById('rubric-title'),
+    rubricSubtitle: document.getElementById('rubric-subtitle'),
+    rubricTableWrapper: document.getElementById('rubric-table-wrapper'),
+    teacherTools: document.getElementById('teacher-tools'),
+    totalScore: document.getElementById('total-score'),
+    resetBtn: document.getElementById('reset-btn'),
+    copyBtn: document.getElementById('copy-btn'),
+    // labels to translate
+    studentLabel: document.getElementById('student-view-label'),
+    teacherLabel: document.getElementById('teacher-view-label'),
+    summaryLabel: document.getElementById('grading-summary-label'),
+    totalLabel: document.getElementById('total-score-label'),
   notesLabel: document.getElementById('notes-toggle-label'),
   langSelect: document.getElementById('lang-select'),
   notes: {
@@ -178,11 +180,19 @@ function calculateScore(criterionName, levelIndex) {
 }
 
 // Update the total score display and refresh the bar chart
-function updateTotalScore() {
-  const total = Object.values(state.scores).reduce((sum, v) => sum + v, 0);
-  dom.totalScore.textContent = total;
-  updateChart();
-}
+  function updateTotalScore() {
+    const total = Object.values(state.scores).reduce((sum, v) => sum + v, 0);
+    dom.totalScore.textContent = total;
+    updateChart();
+  }
+
+  function copyGrades() {
+    const total = Object.values(state.scores).reduce((sum, v) => sum + v, 0);
+    const lines = Object.entries(state.scores).map(([crit, score]) => `${crit}: ${score}`);
+    lines.push(`Total: ${total}`);
+    const text = lines.join('\n');
+    navigator.clipboard.writeText(text);
+  }
 
 let scoreChart = null;
 
@@ -332,16 +342,24 @@ function init() {
     dom.notes.icon.innerHTML = hidden ? '&#9662;' : '&#9652;';
   });
   // Language selector
-  dom.langSelect.value = state.lang;
-  dom.langSelect.addEventListener('change', (e) => {
-    state.lang = e.target.value;
-    applyTranslations();
-  });
-  // Initial setup
-  resetScores();
-  renderRubric();
-  initChart();
-  updateTotalScore();
+    dom.langSelect.value = state.lang;
+    dom.langSelect.addEventListener('change', (e) => {
+      state.lang = e.target.value;
+      applyTranslations();
+    });
+    // Reset scores button
+    dom.resetBtn.addEventListener('click', () => {
+      resetScores();
+      renderRubric();
+      updateTotalScore();
+    });
+    // Copy grades button
+    dom.copyBtn.addEventListener('click', copyGrades);
+    // Initial setup
+    resetScores();
+    renderRubric();
+    initChart();
+    updateTotalScore();
   applyTranslations();
 }
 
