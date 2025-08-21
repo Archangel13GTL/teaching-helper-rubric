@@ -146,6 +146,7 @@ const dom = {
   totalLabel: document.getElementById('total-score-label'),
   notesLabel: document.getElementById('notes-toggle-label'),
   langSelect: document.getElementById('lang-select'),
+  themeToggle: document.getElementById('theme-toggle'),
   notes: {
     toggle: document.getElementById('notes-toggle'),
     content: document.getElementById('notes-content'),
@@ -191,6 +192,9 @@ function initChart() {
   const ctx = document.getElementById('score-chart').getContext('2d');
   const data = rubricData[state.currentRubric];
   const maxWeight = Math.max(...data.criteria.map(c => c.weight));
+  const styles = getComputedStyle(document.documentElement);
+  const accent = styles.getPropertyValue('--accent').trim();
+  const active = styles.getPropertyValue('--active').trim();
   scoreChart = new Chart(ctx, {
     type: 'bar',
     data: {
@@ -198,8 +202,8 @@ function initChart() {
       datasets: [{
         label: 'Points Awarded',
         data: data.criteria.map(() => 0),
-        backgroundColor: '#D6C3B4',
-        borderColor: '#8C7D6F',
+        backgroundColor: active,
+        borderColor: accent,
         borderWidth: 1
       }]
     },
@@ -228,6 +232,16 @@ function updateChart() {
   scoreChart.update();
 }
 
+function updateChartColors() {
+  if (!scoreChart) return;
+  const styles = getComputedStyle(document.documentElement);
+  const accent = styles.getPropertyValue('--accent').trim();
+  const active = styles.getPropertyValue('--active').trim();
+  scoreChart.data.datasets[0].backgroundColor = active;
+  scoreChart.data.datasets[0].borderColor = accent;
+  scoreChart.update();
+}
+
 // Render the rubric table based on the current rubric and mode
 function renderRubric() {
   const data = rubricData[state.currentRubric];
@@ -245,7 +259,7 @@ function renderRubric() {
   });
   html += '</tr></thead><tbody>';
   data.criteria.forEach(criterion => {
-    html += '<tr class="border-b border-gray-200">';
+    html += '<tr class="border-b border-[var(--border)]">';
     html += `<th scope="row" class="p-3 font-semibold criterion-cell">${criterion.name}${isTeacher ? ` (${criterion.weight} pts)` : ''}</th>`;
     criterion.levels.forEach((desc, i) => {
       if (isTeacher) {
@@ -316,6 +330,9 @@ function handleNavClick(e) {
 
 // Initialise the app
 function init() {
+  const storedTheme = localStorage.getItem('theme') || 'neutral';
+  applyTheme(storedTheme);
+
   // Event listeners for nav buttons
   dom.nav.esl.addEventListener('click', handleNavClick);
   dom.nav.general.addEventListener('click', handleNavClick);
@@ -325,6 +342,12 @@ function init() {
     resetScores();
     renderRubric();
     updateTotalScore();
+  });
+  // Theme toggle
+  dom.themeToggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'neutral';
+    const next = current === 'pastel' ? 'neutral' : 'pastel';
+    applyTheme(next);
   });
   // Notes collapse toggle
   dom.notes.toggle.addEventListener('click', () => {
@@ -346,3 +369,12 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  if (dom.themeToggle) {
+    dom.themeToggle.textContent = theme === 'pastel' ? 'Neutral Theme' : 'Pastel Theme';
+  }
+  updateChartColors();
+}
