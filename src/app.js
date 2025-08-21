@@ -139,6 +139,8 @@ const dom = {
   rubricTableWrapper: document.getElementById('rubric-table-wrapper'),
   teacherTools: document.getElementById('teacher-tools'),
   totalScore: document.getElementById('total-score'),
+  resetBtn: document.getElementById('reset-scores'),
+  copyBtn: document.getElementById('copy-grades'),
   // labels to translate
   studentLabel: document.getElementById('student-view-label'),
   teacherLabel: document.getElementById('teacher-view-label'),
@@ -294,6 +296,20 @@ function resetScores() {
   crits.forEach(c => { state.scores[c.name] = 0; });
 }
 
+// Copy total and per-criterion scores to the clipboard
+function copyGrades() {
+  const rubric = rubricData[state.currentRubric];
+  const lines = [`Total: ${dom.totalScore.textContent}`];
+  rubric.criteria.forEach(c => {
+    const score = state.scores[c.name] || 0;
+    lines.push(`${c.name}: ${score}`);
+  });
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text).catch(err => {
+    console.error('Failed to copy grades:', err);
+  });
+}
+
 // Handle navigation button clicks
 function handleNavClick(e) {
   const rubric = e.target.getAttribute('data-rubric');
@@ -337,6 +353,13 @@ function init() {
     state.lang = e.target.value;
     applyTranslations();
   });
+  // Reset and copy buttons
+  dom.resetBtn.addEventListener('click', () => {
+    resetScores();
+    renderRubric();
+    updateTotalScore();
+  });
+  dom.copyBtn.addEventListener('click', copyGrades);
   // Initial setup
   resetScores();
   renderRubric();
