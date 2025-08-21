@@ -11,9 +11,9 @@ export const state = {
 
 export function calculateScore(criterionName, levelIndex) {
   const rubric = rubricData[state.currentRubric];
-  const min = rubric.pointRanges[0][criterionName][levelIndex];
-  const max = rubric.pointRanges[1][criterionName][levelIndex];
-  return Math.round((min + max) / 2);
+  const criterion = rubric.criteria.find(c => c.name === criterionName);
+  const scale = [0, 0.6, 0.8, 1.0];
+  return Math.round((criterion?.weight || 0) * scale[levelIndex]);
 }
 
 export function resetScores() {
