@@ -31,6 +31,17 @@ html[data-theme="neutral"] {
   --border:#E5E7EB;
   --panel:#FFFFFF;
 }
+html[data-theme="dark"] {
+  --bg:#0f172a;
+  --text:#f3f4f6;
+  --accent:#8b5cf6;
+  --muted:#1f2937;
+  --muted-2:#0b1220;
+  --active:#60a5fa;
+  --text-muted:#9ca3af;
+  --border:#374151;
+  --panel:#111827;
+}
 html,body { background:var(--bg); color:var(--text); font-family: sans-serif; }
 .signature { font-family:'Great Vibes', cursive; }
 .tab-active { background:var(--active); color:var(--bg); }
@@ -38,7 +49,7 @@ html,body { background:var(--bg); color:var(--text); font-family: sans-serif; }
 .table-header { background:var(--muted); }
 .criterion-cell { background:var(--muted-2); }
 .score-cell { cursor:pointer; transition: background-color .2s; }
-.score-cell:hover { background:#E3D9CF; }
+.score-cell:hover { background:var(--active); }
 .score-cell.selected { background:var(--active); color:white; font-weight:bold; }
 .toggle-bg:after { content:''; position:absolute; top:2px; left:2px; background:white; width:20px; height:20px; border-radius:9999px; transition: transform .3s; }
 input:checked + .toggle-bg:after { transform: translateX(100%); }
@@ -47,3 +58,4 @@ button:focus-visible, .score-cell:focus-visible, select:focus-visible, input:foc
   outline:2px solid #2563EB;
   outline-offset:2px;
 }
+.signature-img{ filter:drop-shadow(0 2px 1px rgba(0,0,0,.25)); }

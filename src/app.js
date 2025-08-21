@@ -4,8 +4,8 @@
  * Client-side logic for the Teaching Helper Rubric.
  * Provides two rubric templates (ESL and General), a student/teacher mode toggle,
  * a language selector for basic UI labels, theme switching, text size toggle,
- * PDF export, reset/copy tools, and rubric JSON import.
- */
+ * PDF export and reset/copy tools.
+*/
 
 // Define the rubric structures: titles, criteria, point ranges and notes.
 const rubricData = {
@@ -125,14 +125,18 @@ const state = {
   isTeacherView: false,
   scores: {},
   lang: 'en',
-  largeText: false
+  theme: localStorage.getItem('theme') || 'neutral',
+  largeText: localStorage.getItem('largeText') === 'true'
 };
 
 // Cache DOM elements
 const dom = {
   nav: {
     esl: document.getElementById('nav-esl'),
-    general: document.getElementById('nav-general')
+    general: document.getElementById('nav-general'),
+    reset: document.getElementById('nav-reset'),
+    export: document.getElementById('nav-export'),
+    print: document.getElementById('nav-print')
   },
   viewToggle: document.getElementById('view-toggle'),
   textSizeToggle: document.getElementById('text-size-toggle'),
@@ -145,8 +149,9 @@ const dom = {
   resetBtn: document.getElementById('reset-scores'),
   copyBtn: document.getElementById('copy-grades'),
   exportBtn: document.getElementById('export-pdf'),
-  importButton: document.getElementById('import-rubric-btn'),
-  importInput: document.getElementById('import-rubric-input'),
+  // charts
+  donut: document.getElementById('donut-chart'),
+  bars: document.getElementById('bar-chart'),
   // labels to translate
   studentLabel: document.getElementById('student-view-label'),
   teacherLabel: document.getElementById('teacher-view-label'),
@@ -160,45 +165,6 @@ const dom = {
     icon: document.getElementById('notes-icon')
   }
 };
-
-// Schema definition for imported rubric objects
-const rubricSchema = {
-  criteriaRequiredKeys: ['name', 'weight', 'levels'],
-  levelCount: 4,
-  rangeCount: 4,
-  pointRangeSets: 2
-};
-
-// Validate that an imported rubric matches the schema
-function validateRubric(data) {
-  if (!data || typeof data !== 'object') return false;
-  if (!Array.isArray(data.criteria) || !Array.isArray(data.pointRanges) || typeof data.notes !== 'string') {
-    return false;
-  }
-  if (data.pointRanges.length !== rubricSchema.pointRangeSets) return false;
-  for (const criterion of data.criteria) {
-    if (
-      typeof criterion.name !== 'string' ||
-      typeof criterion.weight !== 'number' ||
-      !Array.isArray(criterion.levels) ||
-      criterion.levels.length !== rubricSchema.levelCount ||
-      !criterion.levels.every(l => typeof l === 'string')
-    ) {
-      return false;
-    }
-    for (const range of data.pointRanges) {
-      const arr = range[criterion.name];
-      if (
-        !Array.isArray(arr) ||
-        arr.length !== rubricSchema.rangeCount ||
-        !arr.every(n => typeof n === 'number')
-      ) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
 
 // Apply translations for the current language
 function applyTranslations() {
@@ -224,24 +190,27 @@ function calculateScore(criterionName, levelIndex) {
   return Math.round((min + max) / 2);
 }
 
-// Update the total score display and refresh the bar chart
+// Update the total score display and refresh charts
 function updateTotalScore() {
   const total = Object.values(state.scores).reduce((sum, v) => sum + v, 0);
   dom.totalScore.textContent = total;
-  updateChart();
+  updateCharts();
 }
 
-let scoreChart = null;
+let barChart = null;
+let donutChart = null;
 
-// Initialize a bar chart with Chart.js
-function initChart() {
-  const ctx = document.getElementById('score-chart').getContext('2d');
+// Initialize bar and donut charts
+function initCharts() {
   const data = rubricData[state.currentRubric];
   const maxWeight = Math.max(...data.criteria.map(c => c.weight));
   const styles = getComputedStyle(document.documentElement);
   const accent = styles.getPropertyValue('--accent').trim();
   const active = styles.getPropertyValue('--active').trim();
-  scoreChart = new Chart(ctx, {
+  const muted = styles.getPropertyValue('--muted').trim();
+
+  // bar chart
+  barChart = new Chart(dom.bars.getContext('2d'), {
     type: 'bar',
     data: {
       labels: data.criteria.map(c => c.name),
@@ -267,25 +236,53 @@ function initChart() {
       plugins: { legend: { display: false } }
     }
   });
+
+  // donut chart
+  const totalPossible = data.criteria.reduce((sum, c) => sum + c.weight, 0);
+  donutChart = new Chart(dom.donut.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Score', 'Remaining'],
+      datasets: [{
+        data: [0, totalPossible],
+        backgroundColor: [accent, muted],
+        borderWidth: 0
+      }]
+    },
+    options: { plugins: { legend: { display: false } }, cutout: '70%' }
+  });
 }
 
-// Update bar chart data
-function updateChart() {
-  if (!scoreChart) return;
+// Update chart data
+function updateCharts() {
   const data = rubricData[state.currentRubric];
-  scoreChart.data.labels = data.criteria.map(c => c.name);
-  scoreChart.data.datasets[0].data = data.criteria.map(c => state.scores[c.name] || 0);
-  scoreChart.update();
+  if (barChart) {
+    barChart.data.labels = data.criteria.map(c => c.name);
+    barChart.data.datasets[0].data = data.criteria.map(c => state.scores[c.name] || 0);
+    barChart.update();
+  }
+  if (donutChart) {
+    const total = Object.values(state.scores).reduce((sum, v) => sum + v, 0);
+    const possible = data.criteria.reduce((sum, c) => sum + c.weight, 0);
+    donutChart.data.datasets[0].data = [total, possible - total];
+    donutChart.update();
+  }
 }
 
 function updateChartColors() {
-  if (!scoreChart) return;
   const styles = getComputedStyle(document.documentElement);
   const accent = styles.getPropertyValue('--accent').trim();
   const active = styles.getPropertyValue('--active').trim();
-  scoreChart.data.datasets[0].backgroundColor = active;
-  scoreChart.data.datasets[0].borderColor = accent;
-  scoreChart.update();
+  const muted = styles.getPropertyValue('--muted').trim();
+  if (barChart) {
+    barChart.data.datasets[0].backgroundColor = active;
+    barChart.data.datasets[0].borderColor = accent;
+    barChart.update();
+  }
+  if (donutChart) {
+    donutChart.data.datasets[0].backgroundColor = [accent, muted];
+    donutChart.update();
+  }
 }
 
 // Render the rubric table based on the current rubric and mode
@@ -413,32 +410,22 @@ function copyGrades() {
     });
 }
 
-// Import rubric JSON and replace current rubric data
-function handleImport(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = evt => {
-    try {
-      const imported = JSON.parse(evt.target.result);
-      if (!validateRubric(imported)) {
-        throw new Error('Schema mismatch');
-      }
-      imported.notes = DOMPurify.sanitize(imported.notes || '');
-      rubricData[state.currentRubric] = imported;
-      resetScores();
-      renderRubric();
-      updateTotalScore();
-      if (scoreChart) scoreChart.destroy();
-      initChart();
-      updateChart();
-    } catch (err) {
-      console.error('Failed to import rubric JSON', err);
-      alert('Invalid rubric JSON file.');
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
+// Export scores to a CSV file
+function exportCSV() {
+  const rubric = rubricData[state.currentRubric];
+  let csv = 'Criterion,Score\n';
+  rubric.criteria.forEach(c => {
+    const score = state.scores[c.name] || 0;
+    csv += `"${c.name}",${score}\n`;
+  });
+  csv += `Total,${dom.totalScore.textContent}\n`;
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'scores.csv';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // Handle navigation button clicks
@@ -454,24 +441,33 @@ function handleNavClick(e) {
     resetScores();
     renderRubric();
     updateTotalScore();
-    // Recreate chart for new rubric
-    if (scoreChart) scoreChart.destroy();
-    initChart();
-    updateChart();
+    // Recreate charts for new rubric
+    if (barChart) barChart.destroy();
+    if (donutChart) donutChart.destroy();
+    initCharts();
+    updateCharts();
   }
 }
 
 // Initialise the app
 function init() {
-  const storedTheme = localStorage.getItem('theme') || 'neutral';
-  applyTheme(storedTheme);
+  applyTheme(state.theme);
+
+  // Initial text size
+  dom.textSizeToggle.setAttribute('aria-pressed', state.largeText);
+  document.getElementById('app').classList.toggle('text-lg', state.largeText);
 
   // Event listeners for nav buttons
   dom.nav.esl.addEventListener('click', handleNavClick);
   dom.nav.general.addEventListener('click', handleNavClick);
-  // Import rubric JSON
-  dom.importButton.addEventListener('click', () => dom.importInput.click());
-  dom.importInput.addEventListener('change', handleImport);
+  dom.nav.reset.addEventListener('click', () => {
+    resetScores();
+    renderRubric();
+    updateTotalScore();
+  });
+  dom.nav.export.addEventListener('click', exportCSV);
+  dom.nav.print.addEventListener('click', () => window.print());
+
   // Student/Teacher toggle
   dom.viewToggle.addEventListener('change', (e) => {
     state.isTeacherView = e.target.checked;
@@ -484,12 +480,14 @@ function init() {
     state.largeText = !state.largeText;
     dom.textSizeToggle.setAttribute('aria-pressed', state.largeText);
     document.getElementById('app').classList.toggle('text-lg', state.largeText);
+    localStorage.setItem('largeText', state.largeText);
   });
   // Theme toggle
   dom.themeToggle.addEventListener('click', () => {
-    const current = document.documentElement.getAttribute('data-theme') || 'neutral';
-    const next = current === 'pastel' ? 'neutral' : 'pastel';
-    applyTheme(next);
+    const themes = ['neutral', 'pastel', 'dark'];
+    const idx = themes.indexOf(state.theme);
+    state.theme = themes[(idx + 1) % themes.length];
+    applyTheme(state.theme);
   });
   // Notes collapse toggle
   dom.notes.toggle.addEventListener('click', () => {
@@ -502,7 +500,7 @@ function init() {
     state.lang = e.target.value;
     applyTranslations();
   });
-  // Reset and copy buttons
+  // Reset and copy buttons within teacher tools
   dom.resetBtn.addEventListener('click', () => {
     resetScores();
     renderRubric();
@@ -524,7 +522,7 @@ function init() {
   // Initial setup
   resetScores();
   renderRubric();
-  initChart();
+  initCharts();
   updateTotalScore();
   applyTranslations();
 }
@@ -535,7 +533,8 @@ function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
   if (dom.themeToggle) {
-    dom.themeToggle.textContent = theme === 'pastel' ? 'Neutral Theme' : 'Pastel Theme';
+    const next = theme === 'neutral' ? 'Pastel' : theme === 'pastel' ? 'Dark' : 'Neutral';
+    dom.themeToggle.textContent = `${next} Theme`;
   }
   updateChartColors();
 }
