@@ -26,6 +26,10 @@
     .toggle-bg:after { content:''; position:absolute; top:2px; left:2px; background:white; width:20px; height:20px; border-radius:9999px; transition: transform .3s; }
     input:checked + .toggle-bg:after { transform: translateX(100%); }
     input:checked + .toggle-bg { background:var(--accent); }
+    button:focus-visible, .score-cell:focus-visible, select:focus-visible, input:focus-visible {
+      outline:2px solid #2563EB;
+      outline-offset:2px;
+    }
   </style>
 </head>
 <body class="antialiased">
@@ -39,6 +43,7 @@
             <option value="en">English</option>
             <option value="ceb">Bisayâ (Cebuano)</option>
           </select>
+          <button id="text-size-toggle" class="border rounded p-2" aria-pressed="false">Text size</button>
         </div>
       </div>
       <div class="flex items-center gap-3 mb-4">

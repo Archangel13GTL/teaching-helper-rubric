@@ -124,7 +124,8 @@ const state = {
   currentRubric: 'esl',
   isTeacherView: false,
   scores: {},
-  lang: 'en'
+  lang: 'en',
+  largeText: false
 };
 
 // Cache DOM elements
@@ -134,6 +135,7 @@ const dom = {
     general: document.getElementById('nav-general')
   },
   viewToggle: document.getElementById('view-toggle'),
+  textSizeToggle: document.getElementById('text-size-toggle'),
   rubricTitle: document.getElementById('rubric-title'),
   rubricSubtitle: document.getElementById('rubric-subtitle'),
   rubricTableWrapper: document.getElementById('rubric-table-wrapper'),
@@ -336,6 +338,12 @@ function init() {
   dom.langSelect.addEventListener('change', (e) => {
     state.lang = e.target.value;
     applyTranslations();
+  });
+  // Text size toggle
+  dom.textSizeToggle.addEventListener('click', () => {
+    state.largeText = !state.largeText;
+    dom.textSizeToggle.setAttribute('aria-pressed', state.largeText);
+    document.getElementById('app').classList.toggle('text-lg', state.largeText);
   });
   // Initial setup
   resetScores();
