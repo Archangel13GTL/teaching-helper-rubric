@@ -6,6 +6,12 @@
  * and a language selector for basic UI labels (English and Bisayâ/Cebuano).
  */
 
+// Read stored theme early and apply before rendering
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'neutral') {
+  document.documentElement.setAttribute('data-theme', 'neutral');
+}
+
 // Define the rubric structures: titles, criteria, point ranges and notes.
 const rubricData = {
   esl: {
@@ -124,7 +130,8 @@ const state = {
   currentRubric: 'esl',
   isTeacherView: false,
   scores: {},
-  lang: 'en'
+  lang: 'en',
+  theme: savedTheme || 'pastel'
 };
 
 // Cache DOM elements
@@ -146,6 +153,7 @@ const dom = {
   totalLabel: document.getElementById('total-score-label'),
   notesLabel: document.getElementById('notes-toggle-label'),
   langSelect: document.getElementById('lang-select'),
+  themeToggle: document.getElementById('theme-toggle'),
   notes: {
     toggle: document.getElementById('notes-toggle'),
     content: document.getElementById('notes-content'),
@@ -167,6 +175,18 @@ function applyTranslations() {
   dom.notesLabel.textContent = t.notes;
   // Update document lang attribute
   document.documentElement.lang = state.lang;
+}
+
+// Apply a theme and persist it
+function setTheme(theme) {
+  if (theme === 'neutral') {
+    document.documentElement.setAttribute('data-theme', 'neutral');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    theme = 'pastel';
+  }
+  state.theme = theme;
+  localStorage.setItem('theme', theme);
 }
 
 // Calculate a representative score for a given level of a criterion
@@ -337,6 +357,12 @@ function init() {
     state.lang = e.target.value;
     applyTranslations();
   });
+  // Theme toggle
+  dom.themeToggle.addEventListener('click', () => {
+    const newTheme = state.theme === 'pastel' ? 'neutral' : 'pastel';
+    setTheme(newTheme);
+  });
+  setTheme(state.theme);
   // Initial setup
   resetScores();
   renderRubric();

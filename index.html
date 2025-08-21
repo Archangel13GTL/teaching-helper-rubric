@@ -12,6 +12,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
   <style>
     :root {
+      --bg:#FFF7FA; --text:#4A4A4A; --accent:#FF8FB1; --muted:#FFE5EC; --muted-2:#FFF1F5; --active:#FDCEDF;
+    }
+    html[data-theme="neutral"] {
       --bg:#FDFBF8; --text:#4A4A4A; --accent:#8C7D6F; --muted:#EFEBE7; --muted-2:#F7F4F1; --active:#D6C3B4;
     }
     html,body { background:var(--bg); color:var(--text); font-family: sans-serif; }
@@ -39,6 +42,7 @@
             <option value="en">English</option>
             <option value="ceb">Bisayâ (Cebuano)</option>
           </select>
+          <button id="theme-toggle" class="border rounded p-2">Theme</button>
         </div>
       </div>
       <div class="flex items-center gap-3 mb-4">
