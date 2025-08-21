@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Teaching Helper Rubric</title>
+  <meta name="description" content="Interactive grading rubrics for an English teacher in Cebu" />
+  <!-- Tailwind and Chart.js via CDN for convenience -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Calligraphic font for signature -->
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#FDFBF8; --text:#4A4A4A; --accent:#8C7D6F; --muted:#EFEBE7; --muted-2:#F7F4F1; --active:#D6C3B4;
+    }
+    html,body { background:var(--bg); color:var(--text); font-family: sans-serif; }
+    .signature { font-family:'Great Vibes', cursive; }
+    .tab-active { background:var(--active); color:var(--bg); }
+    .tab-inactive { background:var(--muted); color:var(--text); }
+    .table-header { background:var(--muted); }
+    .criterion-cell { background:var(--muted-2); }
+    .score-cell { cursor:pointer; transition: background-color .2s; }
+    .score-cell:hover { background:#E3D9CF; }
+    .score-cell.selected { background:var(--active); color:white; font-weight:bold; }
+    .toggle-bg:after { content:''; position:absolute; top:2px; left:2px; background:white; width:20px; height:20px; border-radius:9999px; transition: transform .3s; }
+    input:checked + .toggle-bg:after { transform: translateX(100%); }
+    input:checked + .toggle-bg { background:var(--accent); }
+  </style>
+</head>
+<body class="antialiased">
+  <div id="app" class="container mx-auto px-4 py-8 max-w-7xl">
+    <header>
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-4xl font-bold text-[var(--accent)]">Teaching Helper Rubric</h1>
+        <div class="flex items-center gap-2">
+          <label for="lang-select" class="text-sm">Language</label>
+          <select id="lang-select" class="border rounded p-2">
+            <option value="en">English</option>
+            <option value="ceb">Bisayâ (Cebuano)</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 mb-4">
+        <!-- Signature image: user can replace assets/signature.png with their actual signature -->
+        <img src="assets/signature.png" alt="Teacher's signature" class="h-10">
+        <img src="assets/flourish.png" alt="" class="h-6">
+      </div>
+    </header>
+    <nav class="flex justify-center mb-6 border-b-2 border-[var(--muted)] pb-2" role="tablist">
+      <button id="nav-esl" class="tab-active text-lg font-semibold py-3 px-8 rounded-t-lg" role="tab" aria-selected="true" data-rubric="esl">ESL Rubric</button>
+      <button id="nav-general" class="tab-inactive text-lg font-semibold py-3 px-8 rounded-t-lg" role="tab" aria-selected="false" data-rubric="general">General Rubric</button>
+    </nav>
+    <main>
+      <div class="flex justify-center items-center mb-6 gap-4">
+        <span id="student-view-label" class="font-semibold">Student View</span>
+        <label for="view-toggle" class="flex items-center cursor-pointer">
+          <input type="checkbox" id="view-toggle" class="sr-only">
+          <div class="relative w-12 h-6 rounded-full bg-gray-300 toggle-bg"></div>
+        </label>
+        <span id="teacher-view-label" class="font-semibold">Teacher View</span>
+      </div>
+      <section id="rubric-container" class="bg-white rounded-lg shadow p-6 overflow-x-auto">
+        <h2 id="rubric-title" class="text-2xl font-bold text-[var(--accent)] mb-2"></h2>
+        <p id="rubric-subtitle" class="text-md text-gray-500 mb-4"></p>
+        <div id="rubric-table-wrapper"></div>
+      </section>
+      <section id="teacher-tools" class="hidden mt-8">
+        <h3 id="grading-summary-label" class="text-2xl font-bold text-[var(--accent)] mb-4 text-center">Grading Summary</h3>
+        <div class="grid md:grid-cols-2 gap-8">
+          <div id="scoring-summary" class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-baseline mb-4">
+              <h4 id="total-score-label" class="text-xl font-semibold">Total Score:</h4>
+              <span id="total-score" class="text-4xl font-bold text-[var(--active)]">0</span>
+            </div>
+            <p class="text-sm text-gray-500">
+              <strong class="text-gray-600">A</strong> = 90–100 |
+              <strong class="text-gray-600">B</strong> = 80–89 |
+              <strong class="text-gray-600">C</strong> = 70–79 |
+              <strong class="text-gray-600">D/F</strong> &lt; 70
+            </p>
+          </div>
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="chart-container" style="position: relative; height:40vh; max-height:250px; width:100%; max-width:600px; margin:auto;">
+              <canvas id="score-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="notes-container" class="mt-8">
+        <div class="bg-white rounded-lg shadow">
+          <button id="notes-toggle" class="w-full p-4 flex justify-between items-center font-semibold text-lg text-[var(--accent)]">
+            <span id="notes-toggle-label">Scoring Notes &amp; Rationale</span>
+            <span id="notes-icon">&#9662;</span>
+          </button>
+          <div id="notes-content" class="p-6 hidden border-t border-gray-200 text-gray-700 leading-relaxed"></div>
+        </div>
+      </section>
+      <footer class="mt-10 text-center text-sm text-gray-500">
+        <p>Personalized for a Cebu-based English teacher.</p>
+      </footer>
+    </main>
+  </div>
+  <script src="src/app.js"></script>
+</body>
+</html>
