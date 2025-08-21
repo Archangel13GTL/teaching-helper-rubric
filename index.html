@@ -61,6 +61,7 @@
 <body class="antialiased">
   <div id="app" class="container mx-auto px-4 py-8 max-w-7xl">
     <header>
+ codex/add-theme-toggle-and-css-variables
         <div class="flex justify-between items-center mb-6">
           <h1 class="text-4xl font-bold text-[var(--accent)]">Teaching Helper Rubric</h1>
           <div class="flex items-center gap-4">
@@ -73,6 +74,8 @@
             </div>
             <button id="theme-toggle" class="border border-[var(--accent)] text-sm rounded p-2 text-[var(--accent)]">Pastel Theme</button>
           </div>
+
+ main
         </div>
       <div class="flex items-center gap-3 mb-4">
         <!-- Signature image: user can replace assets/signature.png with their actual signature -->
@@ -81,10 +84,11 @@
       </div>
     </header>
     <nav class="flex justify-center mb-6 border-b-2 border-[var(--muted)] pb-2" role="tablist">
-      <button id="nav-esl" class="tab-active text-lg font-semibold py-3 px-8 rounded-t-lg" role="tab" aria-selected="true" data-rubric="esl">ESL Rubric</button>
-      <button id="nav-general" class="tab-inactive text-lg font-semibold py-3 px-8 rounded-t-lg" role="tab" aria-selected="false" data-rubric="general">General Rubric</button>
+      <button id="nav-esl" class="tab-active text-lg font-semibold py-3 px-8 rounded-t-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2" role="tab" aria-selected="true" data-rubric="esl">ESL Rubric</button>
+      <button id="nav-general" class="tab-inactive text-lg font-semibold py-3 px-8 rounded-t-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2" role="tab" aria-selected="false" data-rubric="general">General Rubric</button>
     </nav>
     <main>
+codex/add-theme-toggle-and-css-variables
         <div class="flex justify-center items-center mb-6 gap-4">
           <span id="student-view-label" class="font-semibold">Student View</span>
           <label for="view-toggle" class="flex items-center cursor-pointer">
@@ -96,6 +100,7 @@
         <section id="rubric-container" class="bg-[var(--panel)] rounded-lg shadow p-6 overflow-x-auto">
           <h2 id="rubric-title" class="text-2xl font-bold text-[var(--accent)] mb-2"></h2>
           <p id="rubric-subtitle" class="text-md text-[var(--text-muted)] mb-4"></p>
+main
         <div id="rubric-table-wrapper"></div>
       </section>
         <section id="teacher-tools" class="hidden mt-8">
@@ -119,10 +124,19 @@
             </div>
           </div>
         </div>
+        <div class="flex justify-center gap-4 mt-4">
+          <button id="export-btn" class="bg-[var(--accent)] text-white px-4 py-2 rounded">Export</button>
+          <button id="share-btn" class="bg-[var(--accent)] text-white px-4 py-2 rounded">Share</button>
+          <button id="reset-btn" class="bg-[var(--accent)] text-white px-4 py-2 rounded">Reset</button>
+          <button id="copy-btn" class="bg-[var(--accent)] text-white px-4 py-2 rounded">Copy grades</button>
+        </div>
       </section>
+codex/add-theme-toggle-and-css-variables
         <section id="notes-container" class="mt-8">
           <div class="bg-[var(--panel)] rounded-lg shadow">
           <button id="notes-toggle" class="w-full p-4 flex justify-between items-center font-semibold text-lg text-[var(--accent)]">
+
+main
             <span id="notes-toggle-label">Scoring Notes &amp; Rationale</span>
             <span id="notes-icon">&#9662;</span>
           </button>
@@ -135,5 +149,26 @@
     </main>
   </div>
   <script src="src/app.js"></script>
+  <script>
+    const TEXT_KEY = 'prefersBigText';
+    const bodyEl = document.body;
+    const textToggle = document.getElementById('text-toggle');
+
+    function applyTextPreference() {
+      const big = localStorage.getItem(TEXT_KEY) === 'true';
+      bodyEl.classList.toggle('text-lg', big);
+      textToggle.setAttribute('aria-pressed', big);
+      textToggle.textContent = big ? 'Normal text' : 'Bigger text';
+    }
+
+    textToggle.addEventListener('click', () => {
+      const big = bodyEl.classList.toggle('text-lg');
+      localStorage.setItem(TEXT_KEY, big);
+      textToggle.setAttribute('aria-pressed', big);
+      textToggle.textContent = big ? 'Normal text' : 'Bigger text';
+    });
+
+    applyTextPreference();
+  </script>
 </body>
 </html>
