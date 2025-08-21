@@ -324,9 +324,18 @@ function copyGrades() {
     lines.push(`${c.name}: ${score}`);
   });
   const text = lines.join('\n');
-  navigator.clipboard.writeText(text).catch(err => {
-    console.error('Failed to copy grades:', err);
-  });
+  navigator.clipboard.writeText(text)
+    .then(() => {
+      const originalLabel = dom.copyBtn.textContent;
+      dom.copyBtn.textContent = 'Copied!';
+      setTimeout(() => {
+        dom.copyBtn.textContent = originalLabel;
+      }, 2000);
+    })
+    .catch(err => {
+      console.error('Failed to copy grades:', err);
+      alert('Failed to copy grades. Please try again.');
+    });
 }
 
 // Import rubric JSON and replace current rubric data
