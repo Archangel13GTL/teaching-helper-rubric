@@ -10,38 +10,76 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Calligraphic font for signature -->
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="print.css" media="print">
   <style>
-    :root {
-      --bg:#FDFBF8; --text:#4A4A4A; --accent:#8C7D6F; --muted:#EFEBE7; --muted-2:#F7F4F1; --active:#D6C3B4;
-    }
-    html,body { background:var(--bg); color:var(--text); font-family: sans-serif; }
-    .signature { font-family:'Great Vibes', cursive; }
-    .tab-active { background:var(--active); color:var(--bg); }
-    .tab-inactive { background:var(--muted); color:var(--text); }
-    .table-header { background:var(--muted); }
-    .criterion-cell { background:var(--muted-2); }
-    .score-cell { cursor:pointer; transition: background-color .2s; }
-    .score-cell:hover { background:#E3D9CF; }
-    .score-cell.selected { background:var(--active); color:white; font-weight:bold; }
-    .toggle-bg:after { content:''; position:absolute; top:2px; left:2px; background:white; width:20px; height:20px; border-radius:9999px; transition: transform .3s; }
-    input:checked + .toggle-bg:after { transform: translateX(100%); }
-    input:checked + .toggle-bg { background:var(--accent); }
+      :root {
+        --bg:#FDFBF8;
+        --text:#4A4A4A;
+        --accent:#8C7D6F;
+        --muted:#EFEBE7;
+        --muted-2:#F7F4F1;
+        --active:#D6C3B4;
+        --text-muted:#6B7280;
+        --border:#E5E7EB;
+        --panel:#FFFFFF;
+      }
+      html[data-theme="pastel"] {
+        --bg:#FFF7F8;
+        --text:#5D576B;
+        --accent:#A05C7B;
+        --muted:#FFE5E9;
+        --muted-2:#FFF0F3;
+        --active:#F2B5D4;
+        --text-muted:#7A728B;
+        --border:#FAD1DC;
+        --panel:#FFFFFF;
+      }
+      html[data-theme="neutral"] {
+        --bg:#FDFBF8;
+        --text:#4A4A4A;
+        --accent:#8C7D6F;
+        --muted:#EFEBE7;
+        --muted-2:#F7F4F1;
+        --active:#D6C3B4;
+        --text-muted:#6B7280;
+        --border:#E5E7EB;
+        --panel:#FFFFFF;
+      }
+      html,body { background:var(--bg); color:var(--text); font-family: sans-serif; }
+      .signature { font-family:'Great Vibes', cursive; }
+      .tab-active { background:var(--active); color:var(--bg); }
+      .tab-inactive { background:var(--muted); color:var(--text); }
+      .table-header { background:var(--muted); }
+      .criterion-cell { background:var(--muted-2); }
+      .score-cell { cursor:pointer; transition: background-color .2s; }
+      .score-cell:hover { background:#E3D9CF; }
+      .score-cell.selected { background:var(--active); color:white; font-weight:bold; }
+      .toggle-bg:after { content:''; position:absolute; top:2px; left:2px; background:white; width:20px; height:20px; border-radius:9999px; transition: transform .3s; }
+      input:checked + .toggle-bg:after { transform: translateX(100%); }
+      input:checked + .toggle-bg { background:var(--accent); }
+      button:focus-visible, .score-cell:focus-visible, select:focus-visible, input:focus-visible {
+        outline:2px solid #2563EB;
+        outline-offset:2px;
+      }
   </style>
 </head>
 <body class="antialiased">
   <div id="app" class="container mx-auto px-4 py-8 max-w-7xl">
     <header>
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-4xl font-bold text-[var(--accent)]">Teaching Helper Rubric</h1>
-        <div class="flex items-center gap-2">
-          <label for="lang-select" class="text-sm">Language</label>
-          <select id="lang-select" class="border rounded p-2 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2">
-            <option value="en">English</option>
-            <option value="ceb">Bisayâ (Cebuano)</option>
-          </select>
-          <button id="text-toggle" class="border rounded p-2 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2" aria-pressed="false">Bigger text</button>
+        <div class="flex justify-between items-center mb-6">
+          <h1 class="text-4xl font-bold text-[var(--accent)]">Teaching Helper Rubric</h1>
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+              <label for="lang-select" class="text-sm">Language</label>
+              <select id="lang-select" class="border border-[var(--border)] rounded p-2 bg-[var(--panel)] text-[var(--text)]">
+                <option value="en">English</option>
+                <option value="ceb">Bisayâ (Cebuano)</option>
+              </select>
+            </div>
+            <button id="text-size-toggle" class="border border-[var(--accent)] text-sm rounded p-2 text-[var(--accent)]" aria-pressed="false">Text size</button>
+            <button id="theme-toggle" class="border border-[var(--accent)] text-sm rounded p-2 text-[var(--accent)]">Pastel Theme</button>
+          </div>
         </div>
-      </div>
       <div class="flex items-center gap-3 mb-4">
         <!-- Signature image: user can replace assets/signature.png with their actual signature -->
         <img src="assets/signature.png" alt="Teacher's signature" class="h-10">
@@ -49,86 +87,68 @@
       </div>
     </header>
     <nav class="flex justify-center mb-6 border-b-2 border-[var(--muted)] pb-2" role="tablist">
-      <button id="nav-esl" class="tab-active text-lg font-semibold py-3 px-8 rounded-t-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2" role="tab" aria-selected="true" data-rubric="esl">ESL Rubric</button>
-      <button id="nav-general" class="tab-inactive text-lg font-semibold py-3 px-8 rounded-t-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2" role="tab" aria-selected="false" data-rubric="general">General Rubric</button>
+      <button id="nav-esl" class="tab-active text-lg font-semibold py-3 px-8 rounded-t-lg" role="tab" aria-selected="true" data-rubric="esl">ESL Rubric</button>
+      <button id="nav-general" class="tab-inactive text-lg font-semibold py-3 px-8 rounded-t-lg" role="tab" aria-selected="false" data-rubric="general">General Rubric</button>
+      <button id="import-rubric-btn" class="tab-inactive text-lg font-semibold py-3 px-8 rounded-t-lg ml-4" type="button">Import rubric JSON</button>
+      <input type="file" id="import-rubric-input" accept="application/json" class="hidden" />
     </nav>
     <main>
-      <div class="flex justify-center items-center mb-6 gap-4">
-        <span id="student-view-label" class="font-semibold">Student View</span>
-        <label for="view-toggle" class="flex items-center cursor-pointer focus-within:ring-2 focus-within:ring-[var(--accent)] focus-within:ring-offset-2 rounded">
-          <input type="checkbox" id="view-toggle" class="sr-only focus:outline-none">
-          <div class="relative w-12 h-6 rounded-full bg-gray-300 toggle-bg"></div>
-        </label>
-        <span id="teacher-view-label" class="font-semibold">Teacher View</span>
-      </div>
-      <section id="rubric-container" class="bg-white rounded-lg shadow p-6 overflow-x-auto">
-        <h2 id="rubric-title" class="text-2xl font-bold text-[var(--accent)] mb-2"></h2>
-        <p id="rubric-subtitle" class="text-md text-gray-500 mb-4"></p>
+        <div class="flex justify-center items-center mb-6 gap-4">
+          <span id="student-view-label" class="font-semibold">Student View</span>
+          <label for="view-toggle" class="flex items-center cursor-pointer">
+            <input type="checkbox" id="view-toggle" class="sr-only">
+            <div class="relative w-12 h-6 rounded-full bg-[var(--muted)] toggle-bg"></div>
+          </label>
+          <span id="teacher-view-label" class="font-semibold">Teacher View</span>
+        </div>
+        <section id="rubric-container" class="bg-[var(--panel)] rounded-lg shadow p-6 overflow-x-auto">
+          <h2 id="rubric-title" class="text-2xl font-bold text-[var(--accent)] mb-2"></h2>
+          <p id="rubric-subtitle" class="text-md text-[var(--text-muted)] mb-4"></p>
         <div id="rubric-table-wrapper"></div>
       </section>
-      <section id="teacher-tools" class="hidden mt-8">
-        <h3 id="grading-summary-label" class="text-2xl font-bold text-[var(--accent)] mb-4 text-center">Grading Summary</h3>
-        <div class="grid md:grid-cols-2 gap-8">
-          <div id="scoring-summary" class="bg-white rounded-lg shadow p-6">
+        <section id="teacher-tools" class="hidden mt-8">
+          <div class="flex justify-end mb-4 gap-4">
+            <button id="export-pdf" class="no-print px-4 py-2 bg-[var(--accent)] text-white rounded">Export PDF</button>
+            <button id="reset-scores" class="no-print px-4 py-2 bg-[var(--muted)] rounded">Reset</button>
+            <button id="copy-grades" class="no-print px-4 py-2 bg-[var(--accent)] text-white rounded">Copy Grades</button>
+          </div>
+          <h3 id="grading-summary-label" class="text-2xl font-bold text-[var(--accent)] mb-4 text-center">Grading Summary</h3>
+          <div class="grid md:grid-cols-2 gap-8">
+            <div id="scoring-summary" class="bg-[var(--panel)] rounded-lg shadow p-6">
             <div class="flex justify-between items-baseline mb-4">
               <h4 id="total-score-label" class="text-xl font-semibold">Total Score:</h4>
               <span id="total-score" class="text-4xl font-bold text-[var(--active)]">0</span>
             </div>
-            <p class="text-sm text-gray-500">
-              <strong class="text-gray-600">A</strong> = 90–100 |
-              <strong class="text-gray-600">B</strong> = 80–89 |
-              <strong class="text-gray-600">C</strong> = 70–79 |
-              <strong class="text-gray-600">D/F</strong> &lt; 70
-            </p>
-          </div>
-          <div class="bg-white rounded-lg shadow p-6">
-            <div class="chart-container" style="position: relative; height:40vh; max-height:250px; width:100%; max-width:600px; margin:auto;">
+              <p class="text-sm text-[var(--text-muted)]">
+                <strong class="text-[var(--text)]">A</strong> = 90–100 |
+                <strong class="text-[var(--text)]">B</strong> = 80–89 |
+                <strong class="text-[var(--text)]">C</strong> = 70–79 |
+                <strong class="text-[var(--text)]">D/F</strong> &lt; 70
+              </p>
+            </div>
+            <div class="bg-[var(--panel)] rounded-lg shadow p-6">
+            <div class="chart-container" style="position: relative; height:40vh; max-height:250px; width:100%; max-width:600px;margin:auto;">
               <canvas id="score-chart"></canvas>
             </div>
           </div>
         </div>
-        <div class="flex justify-center gap-4 mt-4">
-          <button id="export-btn" class="bg-[var(--accent)] text-white px-4 py-2 rounded">Export</button>
-          <button id="share-btn" class="bg-[var(--accent)] text-white px-4 py-2 rounded">Share</button>
-          <button id="reset-btn" class="bg-[var(--accent)] text-white px-4 py-2 rounded">Reset</button>
-          <button id="copy-btn" class="bg-[var(--accent)] text-white px-4 py-2 rounded">Copy grades</button>
-        </div>
       </section>
-      <section id="notes-container" class="mt-8">
-        <div class="bg-white rounded-lg shadow">
-          <button id="notes-toggle" class="w-full p-4 flex justify-between items-center font-semibold text-lg text-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2">
+        <section id="notes-container" class="mt-8">
+          <div class="bg-[var(--panel)] rounded-lg shadow">
+          <button id="notes-toggle" class="w-full p-4 flex justify-between items-center font-semibold text-lg text-[var(--accent)]">
             <span id="notes-toggle-label">Scoring Notes &amp; Rationale</span>
             <span id="notes-icon">&#9662;</span>
           </button>
-          <div id="notes-content" class="p-6 hidden border-t border-gray-200 text-gray-700 leading-relaxed"></div>
-        </div>
-      </section>
-      <footer class="mt-10 text-center text-sm text-gray-500">
+            <div id="notes-content" class="p-6 hidden border-t border-[var(--border)] text-[var(--text)] leading-relaxed"></div>
+          </div>
+        </section>
+        <footer class="mt-10 text-center text-sm text-[var(--text-muted)]">
         <p>Personalized for a Cebu-based English teacher.</p>
       </footer>
     </main>
   </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="src/app.js"></script>
-  <script>
-    const TEXT_KEY = 'prefersBigText';
-    const bodyEl = document.body;
-    const textToggle = document.getElementById('text-toggle');
-
-    function applyTextPreference() {
-      const big = localStorage.getItem(TEXT_KEY) === 'true';
-      bodyEl.classList.toggle('text-lg', big);
-      textToggle.setAttribute('aria-pressed', big);
-      textToggle.textContent = big ? 'Normal text' : 'Bigger text';
-    }
-
-    textToggle.addEventListener('click', () => {
-      const big = bodyEl.classList.toggle('text-lg');
-      localStorage.setItem(TEXT_KEY, big);
-      textToggle.setAttribute('aria-pressed', big);
-      textToggle.textContent = big ? 'Normal text' : 'Bigger text';
-    });
-
-    applyTextPreference();
-  </script>
 </body>
 </html>
