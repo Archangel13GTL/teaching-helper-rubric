@@ -1,0 +1,49 @@
+/* Print styles for rubric and summary */
+@page {
+  size: A4;
+  margin: 20mm;
+}
+
+body {
+  background: #fff;
+  color: #000;
+  font-size: 12pt;
+}
+
+nav,
+#view-toggle,
+#student-view-label,
+#teacher-view-label,
+.no-print {
+  display: none !important;
+}
+
+#teacher-tools {
+  display: block !important;
+}
+
+#notes-toggle {
+  display: none !important;
+}
+
+#notes-content {
+  display: block !important;
+}
+
+#rubric-container,
+#teacher-tools,
+#notes-container {
+  page-break-inside: avoid;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border: 1px solid #ccc;
+  padding: 4px;
+}
+

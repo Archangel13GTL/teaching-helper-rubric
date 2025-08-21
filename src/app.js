@@ -137,10 +137,11 @@ const dom = {
   rubricTitle: document.getElementById('rubric-title'),
   rubricSubtitle: document.getElementById('rubric-subtitle'),
   rubricTableWrapper: document.getElementById('rubric-table-wrapper'),
-  teacherTools: document.getElementById('teacher-tools'),
-  totalScore: document.getElementById('total-score'),
-  // labels to translate
-  studentLabel: document.getElementById('student-view-label'),
+    teacherTools: document.getElementById('teacher-tools'),
+    totalScore: document.getElementById('total-score'),
+    exportBtn: document.getElementById('export-pdf'),
+    // labels to translate
+    studentLabel: document.getElementById('student-view-label'),
   teacherLabel: document.getElementById('teacher-view-label'),
   summaryLabel: document.getElementById('grading-summary-label'),
   totalLabel: document.getElementById('total-score-label'),
@@ -336,6 +337,18 @@ function init() {
   dom.langSelect.addEventListener('change', (e) => {
     state.lang = e.target.value;
     applyTranslations();
+  });
+  // Export PDF
+  dom.exportBtn.addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'pt', 'a4');
+    doc.html(document.getElementById('rubric-container'), {
+      callback: function (doc) {
+        doc.save('rubric.pdf');
+      },
+      margin: [20, 20, 20, 20],
+      html2canvas: { scale: 0.75 }
+    });
   });
   // Initial setup
   resetScores();
