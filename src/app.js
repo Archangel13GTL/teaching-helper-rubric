@@ -208,8 +208,8 @@ function initChart() {
       datasets: [{
         label: 'Points Awarded',
         data: data.criteria.map(() => 0),
-        backgroundColor: '#D6C3B4',
-        borderColor: '#8C7D6F',
+        backgroundColor: '#A78BFA',
+        borderColor: '#6B5FD3',
         borderWidth: 1
       }]
     },
@@ -235,6 +235,8 @@ function updateChart() {
   const data = rubricData[state.currentRubric];
   scoreChart.data.labels = data.criteria.map(c => c.name);
   scoreChart.data.datasets[0].data = data.criteria.map(c => state.scores[c.name] || 0);
+  scoreChart.data.datasets[0].backgroundColor = '#A78BFA';
+  scoreChart.data.datasets[0].borderColor = '#6B5FD3';
   scoreChart.update();
 }
 
