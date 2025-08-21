@@ -161,6 +161,45 @@ const dom = {
   }
 };
 
+// Schema definition for imported rubric objects
+const rubricSchema = {
+  criteriaRequiredKeys: ['name', 'weight', 'levels'],
+  levelCount: 4,
+  rangeCount: 4,
+  pointRangeSets: 2
+};
+
+// Validate that an imported rubric matches the schema
+function validateRubric(data) {
+  if (!data || typeof data !== 'object') return false;
+  if (!Array.isArray(data.criteria) || !Array.isArray(data.pointRanges) || typeof data.notes !== 'string') {
+    return false;
+  }
+  if (data.pointRanges.length !== rubricSchema.pointRangeSets) return false;
+  for (const criterion of data.criteria) {
+    if (
+      typeof criterion.name !== 'string' ||
+      typeof criterion.weight !== 'number' ||
+      !Array.isArray(criterion.levels) ||
+      criterion.levels.length !== rubricSchema.levelCount ||
+      !criterion.levels.every(l => typeof l === 'string')
+    ) {
+      return false;
+    }
+    for (const range of data.pointRanges) {
+      const arr = range[criterion.name];
+      if (
+        !Array.isArray(arr) ||
+        arr.length !== rubricSchema.rangeCount ||
+        !arr.every(n => typeof n === 'number')
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 // Apply translations for the current language
 function applyTranslations() {
   const t = translations[state.lang] || translations.en;
@@ -254,7 +293,7 @@ function renderRubric() {
   const data = rubricData[state.currentRubric];
   dom.rubricTitle.textContent = data.title;
   dom.rubricSubtitle.textContent = data.subtitle;
-  dom.notes.content.innerHTML = data.notes;
+  dom.notes.content.innerHTML = DOMPurify.sanitize(data.notes);
   const isTeacher = state.isTeacherView;
   const fragment = document.createDocumentFragment();
   const table = document.createElement('table');
@@ -382,6 +421,10 @@ function handleImport(e) {
   reader.onload = evt => {
     try {
       const imported = JSON.parse(evt.target.result);
+      if (!validateRubric(imported)) {
+        throw new Error('Schema mismatch');
+      }
+      imported.notes = DOMPurify.sanitize(imported.notes || '');
       rubricData[state.currentRubric] = imported;
       resetScores();
       renderRubric();
