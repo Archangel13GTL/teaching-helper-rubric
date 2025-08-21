@@ -146,6 +146,8 @@ const dom = {
   totalLabel: document.getElementById('total-score-label'),
   notesLabel: document.getElementById('notes-toggle-label'),
   langSelect: document.getElementById('lang-select'),
+  importButton: document.getElementById('import-rubric-btn'),
+  importInput: document.getElementById('import-rubric-input'),
   notes: {
     toggle: document.getElementById('notes-toggle'),
     content: document.getElementById('notes-content'),
@@ -294,6 +296,30 @@ function resetScores() {
   crits.forEach(c => { state.scores[c.name] = 0; });
 }
 
+// Import rubric JSON and replace current rubric data
+function handleImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      const imported = JSON.parse(evt.target.result);
+      rubricData[state.currentRubric] = imported;
+      resetScores();
+      renderRubric();
+      updateTotalScore();
+      if (scoreChart) scoreChart.destroy();
+      initChart();
+      updateChart();
+    } catch (err) {
+      console.error('Failed to import rubric JSON', err);
+      alert('Invalid rubric JSON file.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
 // Handle navigation button clicks
 function handleNavClick(e) {
   const rubric = e.target.getAttribute('data-rubric');
@@ -319,6 +345,9 @@ function init() {
   // Event listeners for nav buttons
   dom.nav.esl.addEventListener('click', handleNavClick);
   dom.nav.general.addEventListener('click', handleNavClick);
+  // Import rubric JSON
+  dom.importButton.addEventListener('click', () => dom.importInput.click());
+  dom.importInput.addEventListener('change', handleImport);
   // Student/Teacher toggle
   dom.viewToggle.addEventListener('change', (e) => {
     state.isTeacherView = e.target.checked;
